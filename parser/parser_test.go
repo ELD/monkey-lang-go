@@ -19,7 +19,7 @@ let foobar = 838383;
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 	if program == nil {
-		t.Fatalf("ParseProgram() returned nil")
+		t.Fatal("ParseProgram() returned nil")
 	}
 
 	if len(program.Statements) != 3 {
@@ -62,7 +62,7 @@ return 993322;`
 	for _, stmt := range program.Statements {
 		returnStmt, ok := stmt.(*ast.ReturnStatement)
 		if !ok {
-			t.Error("stmt not *ast.ReturnStatement. Got=%T", stmt)
+			t.Errorf("stmt not *ast.ReturnStatement. Got=%T", stmt)
 			continue
 		}
 
@@ -99,7 +99,7 @@ func TestIdentifierExpression(t *testing.T) {
 	}
 
 	if ident.TokenLiteral() != "foobar" {
-		t.Error("ident.TokenLiteral not %s. Got=%s", "foobar", ident.TokenLiteral())
+		t.Errorf("ident.TokenLiteral not %s. Got=%s", "foobar", ident.TokenLiteral())
 	}
 }
 
