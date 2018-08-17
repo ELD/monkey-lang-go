@@ -92,13 +92,13 @@ func testIntegerObject(expected int64, actual object.Object) error {
 	return nil
 }
 
-type CompilerTestCase struct {
+type compilerTestCase struct {
 	input                string
 	expectedConstants    []interface{}
 	expectedInstructions []code.Instructions
 }
 
-func runCompilerTests(t *testing.T, tests []CompilerTestCase) {
+func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
 	for _, tt := range tests {
@@ -125,7 +125,7 @@ func runCompilerTests(t *testing.T, tests []CompilerTestCase) {
 }
 
 func TestIntegerArithmetic(t *testing.T) {
-	tests := []CompilerTestCase{
+	tests := []compilerTestCase{
 		{
 			input:             "1 + 2",
 			expectedConstants: []interface{}{1, 2},
@@ -191,7 +191,7 @@ func TestIntegerArithmetic(t *testing.T) {
 }
 
 func TestBooleanExpressions(t *testing.T) {
-	tests := []CompilerTestCase{
+	tests := []compilerTestCase{
 		{
 			input:             "true",
 			expectedConstants: []interface{}{},
@@ -283,7 +283,7 @@ func TestBooleanExpressions(t *testing.T) {
 }
 
 func TestConditionals(t *testing.T) {
-	tests := []CompilerTestCase{
+	tests := []compilerTestCase{
 		{
 			input: `
 			if (true) { 10 }; 3333;
@@ -330,7 +330,7 @@ func TestConditionals(t *testing.T) {
 }
 
 func TestGlobalLetStatments(t *testing.T) {
-	tests := []CompilerTestCase{
+	tests := []compilerTestCase{
 		{
 			input: `
 			let one = 1;
@@ -379,7 +379,7 @@ func TestGlobalLetStatments(t *testing.T) {
 }
 
 func TestStringExpressions(t *testing.T) {
-	tests := []CompilerTestCase{
+	tests := []compilerTestCase{
 		{
 			input:                `"monkey"`,
 			expectedConstants:    []interface{}{"monkey"},
@@ -404,7 +404,7 @@ func TestStringExpressions(t *testing.T) {
 }
 
 func TestArrayLiterals(t *testing.T) {
-	tests := []CompilerTestCase{
+	tests := []compilerTestCase{
 		{
 			input: "[]",
 			expectedConstants: []interface{}{},
@@ -438,6 +438,51 @@ func TestArrayLiterals(t *testing.T) {
 				code.Make(code.OpConstant, 5),
 				code.Make(code.OpMul),
 				code.Make(code.OpArray, 3),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
+func TestHashLiterals(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: "{}",
+			expectedConstants: []interface{}{},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpHash, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: "{1: 2, 3: 4, 5: 6}",
+			expectedConstants: []interface{}{1, 2, 3, 4, 5, 6},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpConstant, 2),
+				code.Make(code.OpConstant, 3),
+				code.Make(code.OpConstant, 4),
+				code.Make(code.OpConstant, 5),
+				code.Make(code.OpHash, 6),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: "{1: 2 + 3, 4: 5 * 6}",
+			expectedConstants: []interface{}{1, 2, 3, 4, 5, 6},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpConstant, 2),
+				code.Make(code.OpAdd),
+				code.Make(code.OpConstant, 3),
+				code.Make(code.OpConstant, 4),
+				code.Make(code.OpConstant, 5),
+				code.Make(code.OpMul),
+				code.Make(code.OpHash, 4),
 				code.Make(code.OpPop),
 			},
 		},
