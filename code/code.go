@@ -6,6 +6,38 @@ import (
 	"bytes"
 )
 
+const (
+	OpConstant Opcode = iota
+	OpAdd
+	OpPop
+	OpSub
+	OpMul
+	OpDiv
+	OpTrue
+	OpFalse
+	OpEqual
+	OpNotEqual
+	OpGreaterThan
+	OpMinus
+	OpBang
+	OpJumpNotTruthy
+	OpJump
+	OpNull
+	OpGetGlobal
+	OpSetGlobal
+	OpArray
+	OpHash
+	OpIndex
+	OpCall
+	OpReturnValue
+	OpReturn
+	OpGetLocal
+	OpSetLocal
+	OpGetBuiltin
+	OpClosure
+	OpGetFree
+)
+
 type Instructions []byte
 
 func (ins Instructions) String() string {
@@ -41,6 +73,8 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
+	case 2:
+		return fmt.Sprintf("%s %d %d", def.Name, operands[0], operands[1])
 	}
 
 	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
@@ -48,35 +82,14 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 
 type Opcode byte
 
-const (
-	OpConstant Opcode = iota
-	OpAdd
-	OpPop
-	OpSub
-	OpMul
-	OpDiv
-	OpTrue
-	OpFalse
-	OpEqual
-	OpNotEqual
-	OpGreaterThan
-	OpMinus
-	OpBang
-	OpJumpNotTruthy
-	OpJump
-	OpNull
-	OpGetGlobal
-	OpSetGlobal
-	OpArray
-	OpHash
-	OpIndex
-	OpCall
-	OpReturnValue
-	OpReturn
-	OpGetLocal
-	OpSetLocal
-	OpGetBuiltin
-)
+func Lookup(op byte) (*Definition, error) {
+	def, ok := definitions[Opcode(op)]
+	if !ok {
+		return nil, fmt.Errorf("opcode %d undefined", op)
+	}
+
+	return def, nil
+}
 
 func Make(op Opcode, operands ...int) []byte {
 	def, ok := definitions[op]
@@ -164,13 +177,6 @@ var definitions = map[Opcode]*Definition{
 	OpGetLocal:      {"OpGetLocal", []int{1}},
 	OpSetLocal:      {"OpSetLocal", []int{1}},
 	OpGetBuiltin:    {"OpGetBuiltin", []int{1}},
-}
-
-func Lookup(op byte) (*Definition, error) {
-	def, ok := definitions[Opcode(op)]
-	if !ok {
-		return nil, fmt.Errorf("opcode %d undefined", op)
-	}
-
-	return def, nil
+	OpClosure:       {"OpClosure", []int{2, 1}},
+	OpGetFree:       {"OpGetFree", []int{1}},
 }
